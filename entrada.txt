@@ -1,4 +1,1 @@
-int main() {
-    int x.
-    float y.
-}
+if x) { x = 1; }

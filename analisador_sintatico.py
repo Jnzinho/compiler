@@ -1,58 +1,126 @@
+# analisador_sintatico.py
+
 class AnalisadorSintatico:
     def __init__(self, tokens):
-        self.tokens = tokens
+        self.tokens = tokens + [("$", "$")]
+        self.pilha = ["$", "<programa>"]
         self.pos = 0
-        self.erros = []
-        self.output_messages = []  # Nova lista para armazenar mensagens de saída
+        self.output = []
+
+        # Tabela Sintática completa baseada na GLC fornecida
+        self.tabela = {
+            # <programa>
+            ("<programa>", "CHAVE_ESQUERDA"): ["<lista_comandos>"],
+            ("<programa>", "IDENTIFICADOR"): ["<lista_comandos>"],
+            ("<programa>", "ESTRUTURA_CONTROLE"): ["<lista_comandos>"],
+            ("<programa>", "TIPO_VARIAVEL"): ["<lista_comandos>"],
+            ("<programa>", "$"): [],
+
+            # <lista_comandos>
+            ("<lista_comandos>", "CHAVE_ESQUERDA"): ["<comando>", "<lista_comandos>"],
+            ("<lista_comandos>", "IDENTIFICADOR"): ["<comando>", "<lista_comandos>"],
+            ("<lista_comandos>", "ESTRUTURA_CONTROLE"): ["<comando>", "<lista_comandos>"],
+            ("<lista_comandos>", "TIPO_VARIAVEL"): ["<comando>", "<lista_comandos>"],
+            ("<lista_comandos>", "CHAVE_DIREITA"): [],
+            ("<lista_comandos>", "$"): [],
+
+            # <comando>
+            ("<comando>", "TIPO_VARIAVEL"): ["<declaracao>"],
+            ("<comando>", "IDENTIFICADOR"): ["<atribuicao>"],
+            ("<comando>", "ESTRUTURA_CONTROLE"): ["<comando_if>"],
+
+            # <declaracao>
+            ("<declaracao>", "TIPO_VARIAVEL"): ["<tipo>", "IDENTIFICADOR", "<declaracao_resto>"],
+
+            # <declaracao_resto>
+            ("<declaracao_resto>", "PONTO_VIRGULA"): ["PONTO_VIRGULA"],
+            ("<declaracao_resto>", "ATRIBUICAO"): ["ATRIBUICAO", "<expressao>", "PONTO_VIRGULA"],
+
+            # <atribuicao>
+            ("<atribuicao>", "IDENTIFICADOR"): ["IDENTIFICADOR", "ATRIBUICAO", "<expressao>", "PONTO_VIRGULA"],
+
+            # <comando_if>
+            ("<comando_if>", "ESTRUTURA_CONTROLE"): ["if", "PARENTESE_ESQUERDO", "<expressao>", "PARENTESE_DIREITO", "<bloco>", "<senao>"],
+
+            # <senao>
+            ("<senao>", "ESTRUTURA_CONTROLE"): ["else", "<bloco>"],
+            ("<senao>", "CHAVE_ESQUERDA"): [],
+            ("<senao>", "CHAVE_DIREITA"): [],
+            ("<senao>", "IDENTIFICADOR"): [],
+            ("<senao>", "TIPO_VARIAVEL"): [],
+            ("<senao>", "ESTRUTURA_CONTROLE"): [],
+            ("<senao>", "$"): [],
+
+            # <bloco>
+            ("<bloco>", "CHAVE_ESQUERDA"): ["CHAVE_ESQUERDA", "<lista_comandos>", "CHAVE_DIREITA"],
+
+            # <tipo>
+            ("<tipo>", "TIPO_VARIAVEL"): ["TIPO_VARIAVEL"],
+
+            # <expressao>
+            ("<expressao>", "IDENTIFICADOR"): ["<termo>", "<expressao_prime>"],
+            ("<expressao>", "NUMERO"): ["<termo>", "<expressao_prime>"],
+            ("<expressao>", "PARENTESE_ESQUERDO"): ["<termo>", "<expressao_prime>"],
+
+            # <expressao_prime>
+            ("<expressao_prime>", "OPERADOR_ARITMETICO"): ["OPERADOR_ARITMETICO", "<termo>", "<expressao_prime>"],
+            ("<expressao_prime>", "PARENTESE_DIREITO"): [],
+            ("<expressao_prime>", "PONTO_VIRGULA"): [],
+            ("<expressao_prime>", "CHAVE_DIREITA"): [],
+
+            # <termo>
+            ("<termo>", "IDENTIFICADOR"): ["<fator>", "<termo_prime>"],
+            ("<termo>", "NUMERO"): ["<fator>", "<termo_prime>"],
+            ("<termo>", "PARENTESE_ESQUERDO"): ["<fator>", "<termo_prime>"],
+
+            # <termo_prime>
+            ("<termo_prime>", "OPERADOR_ARITMETICO"): ["OPERADOR_ARITMETICO", "<fator>", "<termo_prime>"],
+            ("<termo_prime>", "PARENTESE_DIREITO"): [],
+            ("<termo_prime>", "PONTO_VIRGULA"): [],
+            ("<termo_prime>", "CHAVE_DIREITA"): [],
+
+            # <fator>
+            ("<fator>", "IDENTIFICADOR"): ["IDENTIFICADOR"],
+            ("<fator>", "NUMERO"): ["NUMERO"],
+            ("<fator>", "PARENTESE_ESQUERDO"): ["PARENTESE_ESQUERDO", "<expressao>", "PARENTESE_DIREITO"]
+        }
 
     def token_atual(self):
-        if self.pos < len(self.tokens):
-            return self.tokens[self.pos]
-        return ('EOF', 'EOF')
-
-    def consumir(self, tipo_esperado):
-        token = self.token_atual()
-        if token[1] == tipo_esperado:
-            self.output_messages.append(f"[OK] Token consumido: {token}")
-            self.pos += 1
-        else:
-            self.erros.append(f"Erro sintático: esperava '{tipo_esperado}', mas encontrou '{token[1]}' ({token[0]})")
-            self.pos += 1  # Avança para tentar sincronizar a análise
+        return self.tokens[self.pos]
 
     def analisar(self):
-        self.programa()
-        if self.erros:
-            self.output_messages.append("\nErros sintáticos encontrados:")
-            for erro in self.erros:
-                self.output_messages.append(erro)
-        else:
-            self.output_messages.append("\nAnálise sintática concluída com sucesso!")
-        
-        return self.output_messages  # Retorna todas as mensagens
+        while self.pilha:
+            topo = self.pilha.pop()
+            atual = self.token_atual()
+            lexema, tipo = atual
 
-    def programa(self):
-        # programa → tipo identificador ( ) { corpo }
-        # Regra: Um programa é composto por um tipo seguido de identificador, parênteses, e um corpo entre chaves
-        self.tipo()
-        self.consumir("IDENTIFICADOR")
-        self.consumir("PARENTESE_ESQUERDO")
-        self.consumir("PARENTESE_DIREITO")
-        self.consumir("CHAVE_ESQUERDA")
-        self.corpo()
-        self.consumir("CHAVE_DIREITA")
+            if topo == tipo:
+                self.output.append(f"[OK] Consumiu: {atual}")
+                self.pos += 1
 
-    def tipo(self):
-        token = self.token_atual()
-        if token[1] == "TIPO_VARIAVEL":
-            self.consumir("TIPO_VARIAVEL")
-        else:
-            self.erros.append(f"Erro: esperava um tipo de variável, mas encontrou '{token[0]}'")
-            self.pos += 1
+            elif topo.startswith("<"):
+                producao = self.tabela.get((topo, tipo))
+                if producao is not None:
+                    for simbolo in reversed(producao):
+                        if simbolo != "":
+                            self.pilha.append(simbolo)
+                    self.output.append(f"[PRODUCAO] {topo} → {' '.join(producao) if producao else 'ε'}")
+                else:
+                    self.output.append(f"[ERRO] Nenhuma produção para {topo} com {tipo}. Pulando token: {lexema}")
+                    self.pos += 1
 
-    def corpo(self):
-        # corpo → { tipo identificador ; }*
-        # Regra: O corpo pode conter múltiplas declarações de variáveis (tipo seguido de identificador e ponto-e-vírgula)
-        while self.token_atual()[1] == "TIPO_VARIAVEL":
-            self.tipo()
-            self.consumir("IDENTIFICADOR")
-            self.consumir("PONTO")  # Usando ponto como ponto-e-vírgula
+            elif topo == "$":
+                if tipo == "$":
+                    self.output.append("\nAnálise sintática concluída com sucesso!")
+                    break
+                else:
+                    self.output.append(f"[ERRO] Esperado fim de cadeia, mas encontrei: {lexema}")
+                    self.pos += 1
+            else:
+                self.output.append(f"[ERRO] Esperado {topo}, mas encontrei {tipo} ({lexema})")
+                self.pos += 1
+
+            if self.pos >= len(self.tokens):
+                break
+
+        return self.output

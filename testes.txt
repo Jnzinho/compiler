@@ -1,0 +1,56 @@
+✅ Exemplos que DEVEM funcionar (válidos segundo sua gramática):
+
+Declaração simples com ponto e vírgula:
+int x;
+
+Declaração com atribuição:
+int x = 42;
+
+Duas declarações seguidas:
+int x;
+float y;
+
+Atribuição isolada:
+x = 10;
+
+Bloco com múltiplos comandos:
+{
+int x;
+x = 5;
+string nome = "joao";
+}
+
+Estrutura if simples:
+if (x) {
+int y = 2;
+}
+
+If com else:
+if (x) {
+x = 1;
+} else {
+x = 2;
+}
+
+ Exemplos que DEVEM falhar (erros léxicos ou sintáticos):
+
+Faltando ponto e vírgula:
+int x ← falta ;
+
+Ponto e vírgula trocado por ponto:
+int x. ← . não é ; (a menos que tratado assim no léxico)
+
+Parênteses malformados:
+if x) { x = 1; } ← falta o ( antes de x
+
+Bloco não fechado:
+{ int x = 10; ← falta }
+
+Atribuição sem valor:
+x = ; ← expressão ausente
+
+Expressão mal formada:
+x = 5 + ; ← faltando termo
+
+Palavra reservada usada como nome:
+int if = 2; ← if é palavra reservada, não identificador

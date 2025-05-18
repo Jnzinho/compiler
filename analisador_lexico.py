@@ -29,6 +29,8 @@ def categorizar(caractere):
         return caractere
     elif caractere == '.':
         return '.'
+    elif caractere == ';':
+        return 'PONTO_VIRGULA'
     else:
         return 'QUALQUER'
 
@@ -49,7 +51,8 @@ def tipo_token(char):
         '{': 'CHAVE_ESQUERDA',
         '}': 'CHAVE_DIREITA',
         ',': 'VIRGULA',
-        '.': 'PONTO'
+        '.': 'PONTO',
+        ';': 'PONTO_VIRGULA'  
     }.get(char, 'DESCONHECIDO')
 
 def analisar_lexico(codigo):
@@ -76,18 +79,22 @@ def analisar_lexico(codigo):
             i += 1
             continue
 
-        lexema += char
-
         if estado == 'q0':
             if cat == 'LETRA' or cat == '_':
+                lexema += char
                 estado = 'q1'
-            elif cat == 'DIGITO':
+                i += 1
+            elif cat == 'DIGITO':                                                                 
+                lexema += char
                 estado = 'q2'
+                i += 1
             elif char == '/':
+                lexema += char
                 estado = 'q3'
-            elif char in '+-*=!<>|&{},().':
+                i += 1
+            elif char in '+-*=!<>|&{},().;':
                 tokens.append((char, tipo_token(char)))
-                lexema = ''
+                i += 1
             else:
                 erros.append((linha, f"Caractere inválido: '{char}'"))
                 estado = 'ERRO'
@@ -95,36 +102,38 @@ def analisar_lexico(codigo):
                 continue
         elif estado == 'q1':
             if cat in ['LETRA', 'DIGITO', '_']:
-                pass
+                lexema += char
+                i += 1
             else:
                 token_tipo = PALAVRAS_RESERVADAS.get(lexema.strip(), 'IDENTIFICADOR')
                 tokens.append((lexema.strip(), token_tipo))
                 lexema = ''
                 estado = 'q0'
-                continue
         elif estado == 'q2':
             if cat == 'DIGITO':
-                pass
+                lexema += char
+                i += 1
             else:
                 tokens.append((lexema.strip(), 'NUMERO'))
                 lexema = ''
                 estado = 'q0'
-                continue
         elif estado == 'q3':
             if char == '/':
+                lexema += char
                 estado = 'q10'
+                i += 1
             else:
                 tokens.append(('/', 'OPERADOR_ARITMETICO'))
                 lexema = ''
                 estado = 'q0'
-                continue
         elif estado == 'q10':
             if char == '\n':
                 estado = 'q0'
                 lexema = ''
                 linha += 1
-        i += 1
+            i += 1
 
+    # Tratamento do último token
     if lexema and estado == 'q1':
         token_tipo = PALAVRAS_RESERVADAS.get(lexema.strip(), 'IDENTIFICADOR')
         tokens.append((lexema.strip(), token_tipo))
