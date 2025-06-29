@@ -20,9 +20,9 @@ def main():
         codigo = f.read()
     
     with open(output_filename, "w") as output_file:
-        write_output("📥 Código de entrada:", output_file)
+        write_output("Código de entrada:", output_file)
         write_output(codigo, output_file)
-        write_output("\n🔍 Análise léxica...", output_file)
+        write_output("\nAnálise léxica...", output_file)
 
         tokens, erros_lexicos = AnalisadorLexico(codigo)
 
@@ -31,12 +31,12 @@ def main():
             write_output(f"{lex:<15} {tipo}", output_file)
 
         if erros_lexicos:
-            write_output("\n❌ Erros léxicos encontrados:", output_file)
+            write_output("\nErros léxicos encontrados:", output_file)
             for linha, msg in erros_lexicos:
                 write_output(f"Linha {linha}: {msg}", output_file)
             return
 
-        write_output("\n🧠 Iniciando análise sintática...", output_file)
+        write_output("\nIniciando análise sintática...", output_file)
         parser = AnalisadorSintatico(tokens)
         mensagens_sintaticas = parser.analisar()
         
