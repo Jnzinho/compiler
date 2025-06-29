@@ -1,4 +1,4 @@
-from analisador_lexico import analisar_lexico
+from analisador_lexico import AnalisadorLexico
 from analisador_sintatico import AnalisadorSintatico
 from datetime import datetime
 import os
@@ -24,7 +24,7 @@ def main():
         write_output(codigo, output_file)
         write_output("\n🔍 Análise léxica...", output_file)
 
-        tokens, erros_lexicos = analisar_lexico(codigo)
+        tokens, erros_lexicos = AnalisadorLexico(codigo)
 
         write_output("\nTokens encontrados:", output_file)
         for lex, tipo in tokens:

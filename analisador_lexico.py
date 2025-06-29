@@ -68,6 +68,7 @@ def AnalisadorLexico(codigo):
         char = codigo[i]
         cat = categorizar(char)
 
+        # desvios condicionais
         if estado == 'q0' and cat in ['ESPACO', '\\n']:
             if char == '\n':
                 linha += 1
