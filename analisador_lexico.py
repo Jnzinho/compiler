@@ -55,7 +55,7 @@ def tipo_token(char):
         ';': 'PONTO_VIRGULA'  
     }.get(char, 'DESCONHECIDO')
 
-def analisar_lexico(codigo):
+def AnalisadorLexico(codigo):
     tokens = []
     erros = []
 
@@ -141,17 +141,3 @@ def analisar_lexico(codigo):
         tokens.append((lexema.strip(), 'NUMERO'))
 
     return tokens, erros
-
-if __name__ == "__main__":
-    with open("entrada.txt", "r") as f:
-        codigo = f.read()
-    tokens, erros = analisar_lexico(codigo)
-
-    print("Tokens:")
-    for lex, tipo in tokens:
-        print(f"{lex:<15} {tipo}")
-
-    if erros:
-        print("\nErros léxicos:")
-        for linha, msg in erros:
-            print(f"Linha {linha}: {msg}")

@@ -1,5 +1,3 @@
-# analisador_sintatico.py
-
 class AnalisadorSintatico:
     def __init__(self, tokens):
         self.tokens = tokens + [("$", "$")]
@@ -7,7 +5,6 @@ class AnalisadorSintatico:
         self.pos = 0
         self.output = []
 
-        # Tabela Sintática completa baseada na GLC fornecida
         self.tabela = {
             # <programa>
             ("<programa>", "CHAVE_ESQUERDA"): ["<lista_comandos>"],
