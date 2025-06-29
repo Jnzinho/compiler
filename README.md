@@ -25,3 +25,5 @@ python3 main.py
 ```
 
 4 - Veja o resultado que será criado dentro da pasta resultados
+
+![image](https://github.com/user-attachments/assets/145e0580-d4e9-43b6-913f-4e351368392b)
