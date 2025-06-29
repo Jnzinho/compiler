@@ -4,15 +4,13 @@ from datetime import datetime
 import os
 
 def write_output(content, file):
-    print(content)  # Saída no terminal
-    file.write(content + "\n")  # Saída no arquivo
+    print(content)
+    file.write(content + "\n")
 
 def main():
-    # Cria o diretório de resultados se não existir
     if not os.path.exists("resultados"):
         os.makedirs("resultados")
     
-    # Cria arquivo de saída com timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_filename = os.path.join("resultados", f"analise_resultado_{timestamp}.txt")
     
@@ -40,7 +38,6 @@ def main():
         parser = AnalisadorSintatico(tokens)
         mensagens_sintaticas = parser.analisar()
         
-        # Escreve todas as mensagens da análise sintática
         for mensagem in mensagens_sintaticas:
             write_output(mensagem, output_file)
 
